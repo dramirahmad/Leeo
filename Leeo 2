@@ -1,0 +1,244 @@
+/**
+ *  Part Two
+ *
+ *  Copyright 2016 Andy Kroll
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ *
+ */
+metadata {
+	definition (name: "Leeo", namespace: "andyjkr", author: "Andy Kroll") {
+		capability "Actuator"
+        capability "Alarm"
+        capability "Carbon Monoxide Detector"
+        capability "Color Control"
+        capability "Lock"
+        capability "Refresh"
+		capability "Relative Humidity Measurement"
+		capability "Sensor"
+		capability "Smoke Detector"
+		capability "Switch"
+		capability "Temperature Measurement"
+        capability "Water Sensor"
+
+
+        command "lock"
+        command "unlock"
+        command "deactivated"
+
+
+        command "wet"
+        command "dry"
+
+        command "reset"
+        command "refresh"
+        
+        command "setHumidity", ["number"]
+        command "setTemperature", ["number"]
+        command "updateHumidity"
+        command "updateTemperature"
+        
+        command "setAdjustedColor"
+        command "on"        
+        command "off"       
+     
+        command "setStateVariable"
+        
+        
+
+        attribute "carbonMonoxide", "string"
+        attribute "smokeDetector", "string"
+        attribute "temperatureDisplay", "string"
+        attribute "temperature", "string"
+        attribute "humidity", "string"
+
+
+        
+	}
+
+// simulator metadata
+	simulator {	 
+	}
+	// UI tile definitions
+    
+	tiles(scale: 2) {
+    	multiAttributeTile(name:"alarmState", type: "generic", width: 6, height: 4){
+			tileAttribute ("alarm", key: "PRIMARY_CONTROL") {
+				attributeState("off", label:"Nothing Detected", icon:"st.alarm.smoke.clear", backgroundColor:"#00a0dc", defaultState: true)
+				attributeState("both", label:"Water Leak", icon:"st.alarm.water.wet", backgroundColor:"#153591")
+                attributeState("strobe", label:"SMOKE DETECTED", icon:"st.alarm.smoke.smoke", backgroundColor:"#bc2323")
+                attributeState("siren", label:"CARBON MONOXIDE", icon:"st.particulate.particulate.particulate", backgroundColor:"f1d801")
+            }
+   			tileAttribute("device.alarm", key: "SECONDARY_CONTROL") {
+    			attributeState("device.armStatus", label:'${currentValue}')
+            }
+		} // End multiAttributeTile
+        multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
+			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+				attributeState "on", label:'${name}', action:"switch.off", icon:"st.lights.philips.hue-single", backgroundColor:"#00A0DC", nextState:"turningOff"
+				attributeState "off", label:'${name}', action:"switch.on", icon:"st.lights.philips.hue-single", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "turningOn", label:'${name}', action:"switch.off", icon:"st.lights.philips.hue-single", backgroundColor:"#95d5f5", nextState:"turningOff"
+				attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.lights.philips.hue-single", backgroundColor:"#95d5f5", nextState:"turningOn"
+			}
+			tileAttribute ("device.color", key: "COLOR_CONTROL") {
+            	attributeState "color", action:"setAdjustedColor"
+            }
+        }
+		standardTile("smoker", "device.alarm", width: 2, height: 2){
+            state("deactivated", label:"Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#00a0dc", defaultState: true)   
+          	state("both", label:"Water", icon:"st.security.alarm.alarm", backgroundColor:"#153591")
+            state("strobe", label:"SMOKE", icon:"st.security.alarm.alarm", backgroundColor:"#bc2323")
+            state("siren", label:"CO", icon:"st.security.alarm.alarm", backgroundColor:"f1d801")
+        }
+		standardTile("switch", "device.switch", width: 2, height: 2){
+            state("on", label:"On", icon:"st.Home.home30", backgroundColor:"#44b621", defaultState: true)   
+            state("off", label:"Off", icon:"st.Home.home30", backgroundColor:"#ffffff", defaultState: true)   
+        
+        }
+		standardTile("smoke", "device.smoke", width: 2, height: 2){
+            state("clear", label:"Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#90d2a7", action: "strobe", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+            state("detected", label:"SMOKE", icon:"st.thermostat.heat", backgroundColor:"#bc2323", action: "lock", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+		}
+        standardTile("Monoxide", "device.carbonMonoxide", width: 2, height: 2){
+            state("clear", label:'Clear', icon: "st.particulate.particulate.particulate", backgroundColor:"#90d2a7", action: "siren", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+            state("detected", label:'Warning!', icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#f1d801", action: "unlock", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+		}
+        standardTile("water", "device.water", width: 2, height: 2) {
+			state("dry", label:'Dry', icon:"st.alarm.water.dry", backgroundColor:"#90d2a7", action: "both", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+			state("wet", label:'Wet', icon:"st.alarm.water.wet", backgroundColor:"#153591", action: "dry", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
+		}
+		valueTile("temp", "device.temperature", width: 2, height: 2, canChangeIcon: true, inactiveLabel: false, canChangeBackground: true){
+			state("temperature", label:'${currentValue}°', unit:"F",
+				backgroundColors:[
+					[value: 31, color: "#153591"],
+					[value: 44, color: "#1e9cbb"],
+					[value: 59, color: "#90d2a7"],
+					[value: 74, color: "#44b621"],
+					[value: 84, color: "#f1d801"],
+					[value: 95, color: "#d04e00"],
+					[value: 96, color: "#bc2323"]
+				]
+			)
+        }
+		valueTile("humidity", "device.humidity", width: 2, height: 2, icon: "st.Weather.weather12", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true){
+			state ("humidity",  label:'${currentValue}%', unit:"F")
+		}
+        standardTile("refresh", "device.refresh", width: 2, height: 2, inactiveLabel: false, canChangeBackground: true, decoration: "flat") {
+			state "default", action: "device.refresh", icon: "st.secondary.refresh"
+		}
+	}
+	main "smoker"
+	details(["alarmState", "smoke", "Monoxide", "water", "temp", "humidity", "refresh", "switch"])
+
+}
+// parse events into attributes
+	def parse(String description) {
+    log.debug "Parsing '${description}'"
+	def results = []
+    }
+// TODO: handle 'carbonMonoxide' attribute
+	def lock( String name ) {
+		log.debug "clear"   
+    	sendEvent (name: "smoke", value: "clear" )
+        sendEvent (name: "alarm", value: "deactivated" )
+	}
+
+	def unlock( String name ) {
+		log.debug "detected"
+    	sendEvent (name: "carbonMonoxide", value: "clear" )
+    	sendEvent (name: "alarm", value: "deactivated" )
+	}
+
+    // TODO: handle 'humidity' attribute
+    // TODO: handle 'acuator' attribute
+
+	// TODO: handle 'alarm' attribute
+    
+	def deactivated() {
+    	log.debug "Alarm Status"
+    	sendEvent(name: "alarm", value: "deactivated", isStateChange: true)
+
+	}
+
+	def strobe() {
+    	log.debug "strobe"
+    	sendEvent(name: "smoke", value: "detected", isStateChange: true)
+    	sendEvent(name: "alarm", value: "strobe", isStateChange: true)
+
+	}
+
+	def siren() {
+    	log.debug "siren"
+    	sendEvent(name: "carbonMonoxide", value: "detected", isStateChange: true)
+    	sendEvent(name: "alarm", value: "siren", isStateChange: true)
+	}
+
+def both() {
+    	log.debug "both"
+    	sendEvent(name: "water", value: "wet", isStateChange: true)
+    	sendEvent(name: "alarm", value: "both", isStateChange: true)        
+	}
+
+
+    // TODO: handle 'color control' attribute
+
+    // TODO: handle 'refresh' attribute
+
+
+    // TODO: handle 'temp' attribute   
+        
+	def updateTemperature(newval) {
+    	log.debug "New Temperature = $newval"
+    	sendEvent(name: "temperature", value: newval, isStateChange: true)
+        sendEvent(name:"temperature", value: value)
+	}
+
+	def updateHumidity(newval) {
+    	log.debug "New Humidity = $newval"
+    	sendEvent(name: "humidity", value: newval, isStateChange: true)
+        sendEvent(name:"humidity", value: value)
+	}
+           
+	def updateTemperature() {
+    	log.debug "temperature = $currentValue'"
+    	sendEvent(name: "temperature", value: newval, isStateChange: true)
+        sendEvent(name:"temperature", value: value)
+	}
+
+	def updateHumidity() {
+    	log.debug "humidity = $newval"
+    	sendEvent(name: "humidity", value: newval, isStateChange: true)
+        sendEvent(name:"humidity", value: value)
+	} 
+    
+	// TODO: handle 'water' attribute
+
+	def dry() {
+    	log.debug "Virtual Water Dry"
+    	sendEvent(name: "water", value: "dry", isStateChange: true)
+        sendEvent(name: "alarm", value: "deactivated", isStateChange: true)
+	}
+
+	def wet() {
+    	log.debug "Virtual Water Wet"
+    	sendEvent(name: "water", value: "wet", isStateChange: true)
+        sendEvent(name: "alarm", value: "both", isStateChange: true)
+	}
+	// TODO: handle 'switch' attribute
+
+	def on() {
+		log.debug 'Virtual Switch On';
+		sendEvent(name: 'switch', value: 'on');
+	}
+
+	def off() {
+		log.debug 'Virtual Switch Off';
+		sendEvent(name: 'switch', value: 'off');
+	}
