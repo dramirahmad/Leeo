@@ -1,7 +1,7 @@
 /**
- *  Part Two
+ *  Leeo Smart Alert
  *
- *  Copyright 2016 Andy Kroll
+ *  Copyright 2016 Andy_Armijo, njschwartz
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition (name: "Leeo", namespace: "andyjkr", author: "Andy Kroll") {
+	definition (name: "Leeo", namespace: "andyjkr", author: "Andy Armijo") {
 		capability "Actuator"
         capability "Alarm"
         capability "Carbon Monoxide Detector"
@@ -29,33 +29,23 @@ metadata {
         capability "Water Sensor"
 
 
-        command "lock"
-        command "unlock"
         command "deactivated"
-
-
+		command "dry"
         command "wet"
-        command "dry"
-
         command "reset"
         command "refresh"
         
-        command "setHumidity", ["number"]
-        command "setTemperature", ["number"]
+
         command "updateHumidity"
         command "updateTemperature"
         
-        command "setAdjustedColor"
-        command "on"        
-        command "off"       
-     
+    	command "setAdjustedColor"
         command "setStateVariable"
         
         
 
         attribute "carbonMonoxide", "string"
         attribute "smokeDetector", "string"
-        attribute "temperatureDisplay", "string"
         attribute "temperature", "string"
         attribute "humidity", "string"
 
@@ -99,8 +89,7 @@ metadata {
         }
 		standardTile("switch", "device.switch", width: 2, height: 2){
             state("on", label:"On", icon:"st.Home.home30", backgroundColor:"#44b621", defaultState: true)   
-            state("off", label:"Off", icon:"st.Home.home30", backgroundColor:"#ffffff", defaultState: true)   
-        
+            state("off", label:"Off", icon:"st.Home.home30", backgroundColor:"#ffffff", defaultState: true)                     
         }
 		standardTile("smoke", "device.smoke", width: 2, height: 2){
             state("clear", label:"Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#90d2a7", action: "strobe", canChangeIcon: true, inactiveLabel: false, canChangeBackground: true, decoration: "flat")
@@ -180,7 +169,7 @@ metadata {
     	sendEvent(name: "alarm", value: "siren", isStateChange: true)
 	}
 
-def both() {
+	def both() {
     	log.debug "both"
     	sendEvent(name: "water", value: "wet", isStateChange: true)
     	sendEvent(name: "alarm", value: "both", isStateChange: true)        
@@ -188,26 +177,44 @@ def both() {
 
 
     // TODO: handle 'color control' attribute
+	def setAdjustedColor(value) {
+		log.debug "Color is" + value
+		sendEvent(name: "color", value: value.hex)
+		sendEvent(name: "hue", value: value.hue, isStateChange: true)
+    def params = [
+		uri: "https://maker.ifttt.com/trigger/EVENTnameHERE/with/key/YOURiftttKEYgoesHERE",
+        body: [
+        	value1: value.hex]
+    ]
 
+    try {
+        httpPostJson(params) { resp ->
+            resp.headers.each {
+                log.debug "${it.name} : ${it.value}"
+            }
+            log.debug "response contentType: ${resp.contentType}"
+            log.debug "response data: ${resp.data}"
+        }
+    } catch (e) {
+        log.debug "something went wrong: $e"
+	}	
+}
     // TODO: handle 'refresh' attribute
 
 
     // TODO: handle 'temp' attribute   
-        
+    
 	def updateTemperature(newval) {
     	log.debug "New Temperature = $newval"
     	sendEvent(name: "temperature", value: newval, isStateChange: true)
-        sendEvent(name:"temperature", value: value)
 	}
 
 	def updateHumidity(newval) {
     	log.debug "New Humidity = $newval"
     	sendEvent(name: "humidity", value: newval, isStateChange: true)
-        sendEvent(name:"humidity", value: value)
 	}
-           
 	def updateTemperature() {
-    	log.debug "temperature = $currentValue'"
+    	log.debug "temperature =$newval'"
     	sendEvent(name: "temperature", value: newval, isStateChange: true)
         sendEvent(name:"temperature", value: value)
 	}
@@ -242,3 +249,15 @@ def both() {
 		log.debug 'Virtual Switch Off';
 		sendEvent(name: 'switch', value: 'off');
 	}
+ @andyjkr
+  
+            
+ 
+Write  Preview
+
+Leave a comment
+Attach files by dragging & dropping,  Choose Files selecting them, or pasting from the clipboard.
+ Styling with Markdown is supported
+Comment
+Contact GitHub API Training Shop Blog About
+© 2017 GitHub, Inc. Terms Privacy Security Status Help
