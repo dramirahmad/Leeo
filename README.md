@@ -14,7 +14,7 @@ Commands:
           Send command "lock" to clear Smoke alarm
           Send command "unlock" to clear CO. 
 
-To receive Temperature and humidty values, as well as controlling the Leeo's color, CoRe pistons must be setup. 
+To receive Temperature and humidty values, as well as controlling the Leeo's color, CoRe pistons/IFTTT Recipe's must be setup. 
 
 Temp/Humidity Piston
           
@@ -37,3 +37,11 @@ IFTTT Recipe
           Metohd: Post. Content: json
           In the body of the request, add {"humidity":{{HumidityValue}}} or {"temp":{{TemperatureValue}}} 
           Create another recipe for the other variable. 
+          
+To control Leeo's color
+          
+          Create an IFTTT recipe, with a webhook trigger. Your event name will be used in the code of this DTH.
+          For "which value" add an ingredient, Value 1. 
+          Find the URL at line 185. 
+          Enter your event name and Maker Channel Key where appropriate. 
+          
