@@ -6,9 +6,11 @@ A smartthings device type for the Leeo smart alert. Utilizing the triggers from 
           Control the color of the actual Leeo device
           Function as a Smoke Detector/CO Sensor/Water Sensor
 
+Commands:
 
-Send command "siren" for Carbon Monoxide
-Send command "strobe" for Smoke
-Send command "siren and strobe" for Water.
+          Send command "siren" for Carbon Monoxide
+          Send command "strobe" for Smoke
+          Send command "siren and strobe" for Water.
+          Send command "lock" to clear Smoke alarm
+          Send command "unlock" to clear CO. 
 
-Additionally, "locking" this device will clear the smoke alarm, and "unlocking" this device will clear the carbon monoxide alarm. 
