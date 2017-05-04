@@ -2,7 +2,7 @@
 
 A smartthings device type for the Leeo smart alert. 
 
-Utilizing the triggers from IFTTT, this device type will  
+Utilizing the triggers from IFTTT, this device type will  </>
           Update with Leeo's temp/humidity readings
           Function as a smoke detector, carbon monoxide sensor, and water sensor
           Control the color of the actual Leeo device
